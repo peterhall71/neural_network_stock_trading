@@ -1,18 +1,15 @@
-
 # load libraries
 library(data.table)
 
 # prepare dataframe
 dfprep <- db_results
-db_results$ticker <- as.factor(db_results$ticker)
 
-# subset dataframe, drop unneeded columns
-aapl <- dfprep[dfprep$ticker == "aapl", ]
-aaplOHLC <- aapl[,1:4]
+# drop unneeded columns
+ohlc <- dfprep[,1:4]
 
 # transpose dataframe and convert to vector
 # structure created is: open1, high1, low1, close1, open2, high2, low2, close2, etc...
-aaplVec <- as.vector(t(aaplOHLC))
+ohlcVec <- as.vector(t(ohlc))
 
 # create subsetting function
 subsetVector <- function(y, i) {
@@ -21,18 +18,20 @@ subsetVector <- function(y, i) {
 }
 
 # create dataframe
-aapl44list <- lapply(seq_along(aaplVec), subsetVector, y = aaplVec)
-aapl44df <- as.data.frame(t(as.data.frame(aapl44list)))
+ohlcList <- lapply(seq_along(ohlcVec), subsetVector, y = ohlcVec)
+ohlcDF <- as.data.frame(t(as.data.frame(ohlcList)))
 
 # clean up dataframe
-rownames(aapl44df) <- NULL
-aapl44df <- na.omit(aapl44df)
+rownames(ohlcDF) <- NULL
+ohlcDF <- na.omit(ohlcDF)
 
 # normalize, divide rows by mean
-aapl44norm <- aapl44df/rowMeans(aapl44df)
+ohlcNorm <- ohlcDF/rowMeans(ohlcDF)
 
 # code training data and drop unneeded column
-key <- apply(aapl44norm, 1, function(x) {ifelse(x[45] > x[41], 1, 0)})
-trainingData <- data.frame(aapl44norm, key, row.names = NULL)
+key <- apply(ohlcNorm, 1, function(x) {ifelse(x[45] > x[41], 1, 0)})
+trainingData <- data.frame(ohlcNorm, key, row.names = NULL)
 trainingData <- trainingData[ ,-c(42:45)]
 
+# write training data to csv
+write.csv(trainingData,"trainingData.csv", row.names = FALSE)
