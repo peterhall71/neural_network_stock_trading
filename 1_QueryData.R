@@ -3,10 +3,10 @@ library(RMySQL)
 
 # connect to mysql database
 con <- dbConnect(MySQL(), 
-		user = 'phall', 
-		password = 'raspberry', 
-		dbname = 'dhData', 
-		host = '192.168.1.2'
+		user = 'user', 
+		password = 'password', 
+		dbname = 'dbname', 
+		host = 'host'
 )
 
 # query database for stock data
